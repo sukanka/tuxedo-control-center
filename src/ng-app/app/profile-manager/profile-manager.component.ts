@@ -29,6 +29,7 @@ import { Subscription } from 'rxjs';
 import { ITccSettings } from '../../../common/models/TccSettings';
 import { ChangeDetectorRef } from '@angular/core';
 import { ProfileConflictDialogService } from "../profile-conflict-dialog/profile-conflict-dialog.service";
+import * as remote from '@electron/remote';
 
 
 enum InputMode {
@@ -84,7 +85,7 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
         private cdref: ChangeDetectorRef,
         private dialogService: ProfileConflictDialogService,
         ) { }
-        
+
 
     ngOnInit() {
         this.defineButtons();
@@ -125,7 +126,7 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
     ngAfterContentChecked() {
         this.cdref.detectChanges();
     }
-    
+
     public isProfileActive(profileId: string): boolean {
         return this.state.getActiveProfile().id === profileId;
     }
@@ -212,8 +213,8 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
             // TODO, this should probably be changed to not use remote module and instead using a function in
             // utils.service that opens a message box like utils.service confirmDialog()
             // for more uniform coding style and also remote module is deprecated.
-            const choice = this.electron.remote.dialog.showMessageBox(
-                this.electron.remote.getCurrentWindow(),
+            const choice = remote.dialog.showMessageBox(
+                remote.getCurrentWindow(),
                 {
                     title: $localize `:@@cProfMgrInvalidNameTitle:Invalid input`,
                     message: $localize `:@@cProfMgrInvalidNameMessage:A name for the profile is required`,
@@ -241,12 +242,12 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
 
     }
 
-    
+
     public async importProfiles()
     {
         this.utils.pageDisabled = true;
         let documentsPath = await this.utils.getPath('documents');
-        let importLabel = $localize `:@@pMgrImportLabelFileDialoge:Import`; 
+        let importLabel = $localize`:@@pMgrImportLabelFileDialoge:Import`;
         let res;
         let txt;
         try
@@ -262,7 +263,7 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
         }
 
         let profiles: ITccProfile[];
-        try 
+        try
         {
             profiles = JSON.parse(txt);
             // console.log(profiles);
@@ -284,7 +285,7 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
                 if(res.action === "keepNew")
                 {
                     newProfiles = newProfiles.concat(profiles[i]);
-                } 
+                }
                 else if (res.action === "keepOld") // basically same thing as cancel
                 {
                     continue;
@@ -319,7 +320,7 @@ export class ProfileManagerComponent implements OnInit, OnDestroy {
         this.utils.pageDisabled = false;
     }
 
-    
+
 
 
 

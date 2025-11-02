@@ -24,6 +24,7 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import * as remote from '@electron/remote';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { BehaviorSubject } from 'rxjs';
 import { ConfirmDialogData, ConfirmDialogResult, DialogConfirmComponent } from './dialog-confirm/dialog-confirm.component';
@@ -250,11 +251,11 @@ export class UtilsService {
   }
 
   public getAppVersion(): string {
-    return this.electron.remote.app.getVersion();
+      return remote.app.getVersion();
   }
 
   public getProcessVersions(): NodeJS.ProcessVersions {
-    return this.electron.remote.process.versions;
+      return remote.process.versions;
   }
 
   public changeLanguage(languageId: string) {
@@ -376,7 +377,7 @@ export class UtilsService {
     });
     return dialogRef.afterClosed().toPromise();
   }
-  
+
   private defaultProfileInfos = new Map<string, IProfileTextMappings>();
 
   public fillDefaultProfileTexts(profile: ITccProfile) {

@@ -26,6 +26,7 @@ import { ConfigService } from '../config.service';
 import { IStateInfo, StateService } from '../state.service';
 import { UtilsService } from '../utils.service';
 import { ActivatedRoute } from '@angular/router';
+import * as remote from '@electron/remote';
 
 @Component({
   selector: 'app-main-gui',
@@ -65,8 +66,8 @@ export class MainGuiComponent implements OnInit, OnDestroy {
         this.subscriptions.add(this.state.activeProfile.subscribe(activeProfile => { this.getSettings(); }));
 
         if (!this.dataLoaded) {
-            this.electron.remote.dialog.showMessageBox(
-                this.electron.remote.getCurrentWindow(),
+            remote.dialog.showMessageBox(
+                remote.getCurrentWindow(),
                 {
                   title: $localize `:@@msgboxTitleServiceUnavailable:Service unavailable`,
                   message: $localize `:@@msgboxMessageServiceUnavailable:Communication with tccd service is unavailable, please restart service and try again.`,
@@ -74,7 +75,7 @@ export class MainGuiComponent implements OnInit, OnDestroy {
                   buttons: ['ok']
                 }
               );
-              this.electron.remote.getCurrentWindow().close();
+            remote.getCurrentWindow().close();
         }
     }
 
@@ -83,11 +84,11 @@ export class MainGuiComponent implements OnInit, OnDestroy {
     }
 
     public buttonExit(): void {
-        this.electron.remote.getCurrentWindow().close();
+        remote.getCurrentWindow().close();
     }
 
     public buttonMinimize(): void {
-        this.electron.remote.getCurrentWindow().minimize();
+        remote.getCurrentWindow().minimize();
     }
 
     public getSettings(): ITccSettings {

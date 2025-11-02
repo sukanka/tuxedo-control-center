@@ -30,6 +30,7 @@ import { DeviceInfo, LCT21001, LCTDeviceModel, PumpVoltage, RGBState } from './L
 import { NgTranslations, profileIdToI18nId } from './NgTranslations';
 import { OpenDialogReturnValue, SaveDialogReturnValue } from 'electron/main';
 import electron = require("electron");
+import * as remoteMain from '@electron/remote/main';
 
 // Tweak to get correct dirname for resource files outside app.asar
 const appPath = __dirname.replace('app.asar/', '');
@@ -101,6 +102,9 @@ app.on("ready", () => {
 });
 
 app.whenReady().then( async () => {
+    // 初始化 @electron/remote
+    remoteMain.initialize();
+
     try {
         const systemLanguageId = app.getLocale().substring(0, 2);
         if (await userConfig.get('langId') === undefined) {
@@ -160,7 +164,7 @@ async function initTray() {
         tray.state.isAutostartTrayInstalled = isAutostartTrayInstalled();
         tray.create();
     };
-    
+
     tray.events.fnLockClick = (status: boolean) => {
         tray.state.fnLockStatus = !status
         tccDBus.setFnLockStatus(tray.state.fnLockStatus);
@@ -551,11 +555,13 @@ async function createTccWindow(langId: string, module?: string) {
         icon: path.join(__dirname, '../../data/dist-data/tuxedo-control-center_256.png'),
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false,
-            enableRemoteModule: true,
+            contextIsolation: false
         },
         show: false
     });
+
+    // 为这个窗口启用 remote 模块
+    remoteMain.enable(tccWindow.webContents);
 
     // Hide menu bar
     tccWindow.setMenuBarVisibility(false);
@@ -568,16 +574,16 @@ async function createTccWindow(langId: string, module?: string) {
 
     tccWindow.on('close', async function (e) {
         await tccDBus.setSensorDataCollectionStatus(false)
-    
+
         let collectionStatus = undefined
         let retryCount = 0
         const maxRetries = 5
-        
+
         while (collectionStatus !== false && retryCount < maxRetries) {
             collectionStatus = await tccDBus.getSensorDataCollectionStatus()
             retryCount++
         }
-    
+
         if (collectionStatus !== false) {
             console.error('Failed to set sensor data collection status after multiple attempts')
         }
@@ -1137,7 +1143,7 @@ const aquarisHandlers = new Map<string, (...args: any[]) => any>()
         aquarisStateExpected.pumpOn = false;
         await updateDeviceState(aquaris, aquarisStateCurrent, aquarisStateExpected);
     })
-    
+
     .set(ClientAPI.prototype.saveState.name, async () => {
         if (await aquarisConnectedDemo()) return;
         await userConfig.set('aquarisSaveState', JSON.stringify(aquarisStateCurrent));
